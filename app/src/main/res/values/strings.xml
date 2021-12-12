@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">RUP</string>
+    <string name="app_name">WEARapp</string>
+    <string name="logo">W co się ubrać?</string>
+    <string name="todo">TODO</string>
+    <string name="podaj_informacje_aby_otrzymywa_codzienne_propozycje_ubioru_i_sugerowan_godzin_ustawienia_budzika">Podaj informacje, aby otrzymywać codzienne propozycje ubioru i sugerowaną godzinę ustawienia budzika.</string>
+    <string name="adres_zamieszkania">Adres zamieszkania</string>
+    <string name="adres_miejsca_pracy">Adres miejsca pracy</string>
+    <string name="godzina_rozpocz_cia_pracy">Godzina rozpoczęcia pracy</string>
+    <string name="todo2">TODO</string>
+    <string name="todo3">TODO</string>
+    <string name="todo4">TODO</string>
 </resources>

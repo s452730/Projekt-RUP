@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.rup">
+    package="com.example.wearapp">
+    <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/logo1_foreground"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/logo1_foreground"
         android:supportsRtl="true"
-        android:theme="@style/Theme.RUP">
+        android:theme="@style/Theme.WEARapp">
         <activity
             android:name=".MainActivity"
             android:exported="true">
