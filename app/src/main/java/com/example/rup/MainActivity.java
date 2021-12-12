@@ -1,20 +1,10 @@
 package com.example.rup;
 
-import android.os.AsyncTask;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import com.example.rup.API.WeatherAPI;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,87 +27,8 @@ public class MainActivity extends AppCompatActivity {
                 String key = "992e7cab06164165980213921210812";
                 String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
                         "&q=" + city + "&dt=" + date;
-                new GetURLData().execute(url);
+                new WeatherAPI().execute(url);
             }
         });
-    }
-   private class GetURLData extends AsyncTask<String, String, String> {
-
-        @Override
-        protected String doInBackground(String... strings) {
-           HttpURLConnection connection = null;
-            BufferedReader reader = null;
-
-            try {
-                URL url = new URL(strings[0]);
-                connection = (HttpURLConnection) url.openConnection();
-                connection.connect();
-
-                InputStream stream = connection.getInputStream();
-                reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null)
-                    buffer.append(line).append("\n");
-
-                return buffer.toString();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (connection != null)
-                    connection.disconnect();
-                try {
-                    if (reader != null)
-                        reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            JSONObject info = null;
-            try {
-                info = new JSONObject(s);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            JSONObject day = null;
-            try {
-                day = info.getJSONObject("forecast")
-                        .getJSONArray("forecastday")
-                        .getJSONObject(0)
-                        .getJSONObject("day");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            double avgTemp = 0;
-            try {
-                avgTemp = day.getDouble("avgtemp_c");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            JSONObject condition = null;
-            try {
-                condition = day.getJSONObject("condition");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            String weather = null;
-            try {
-                weather = condition.getString("text");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-
-            // GetApiDataWeather getApiDataWeather = new GetApiDataWeather(avgTemp, weather);
-            // getApiDataWeather.getWeather();
-            // getApiDataWeather.getAvg_Temp();
-        }
     }
 }
