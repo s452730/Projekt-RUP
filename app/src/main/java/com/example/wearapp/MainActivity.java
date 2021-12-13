@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import ClothingService.TempEnum;
+import ClothingService.ClothingService;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -42,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         button.setOnClickListener(new View.OnClickListener() {
+
+
             @Override
             public void onClick(View view) {
             String myTxt = adresM.getText().toString() +"\n" + adresP.getText().toString() + "\n" + godzina.getText().toString() + "\n";
