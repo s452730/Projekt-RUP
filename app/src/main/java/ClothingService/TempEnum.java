@@ -29,7 +29,6 @@ public enum TempEnum {
             16
     );
 
-
     private String set1;
     private String set2;
     private String set3;
