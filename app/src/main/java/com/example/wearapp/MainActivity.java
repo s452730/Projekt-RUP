@@ -1,5 +1,7 @@
 package com.example.wearapp;
 
+import ClothingService.ClothingService;
+import android.os.AsyncTask;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -25,9 +27,13 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import java.io.FileWriter;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -80,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                     new TraceData().start();
 
 
-                    Toast.makeText(MainActivity.this, "dane zapisane!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, data.get(0), Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -99,6 +105,18 @@ public class MainActivity extends AppCompatActivity {
                     while ((str = bufferread.readLine()) != null) {
                         strbuff.append(str + "\n");
                     }
+                    //OPTIONS
+                    // TOMORROW_DATE
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                    Date tomorrow = calendar.getTime();
+                    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(tomorrow);
+                    String city = "Poznan";
+                    // String hour = "0";
+                    String key = "992e7cab06164165980213921210812";
+                    String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
+                            "&q=" + city + "&dt=" + date;
+                    new WeatherAPI().execute(url);
                     txtShow.setText(strbuff.toString());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -140,12 +158,12 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
-                        "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
-                        + "&destination=" + workAddress
-                        + "&arrival_time=" + hourOfWorkingStart);
+//              URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
+//                        "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
+//                        + "&destination=" + workAddress
+//                        + "&arrival_time=" + hourOfWorkingStart);
                 //test
-//                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 
@@ -172,6 +190,87 @@ public class MainActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    }
+    public class WeatherAPI extends AsyncTask<String, String, String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+            HttpURLConnection connection = null;
+            BufferedReader reader = null;
+
+            try {
+                URL url = new URL(strings[0]);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.connect();
+
+                InputStream stream = connection.getInputStream();
+                reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null)
+                    buffer.append(line).append("\n");
+
+                return buffer.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (connection != null)
+                    connection.disconnect();
+                try {
+                    if (reader != null)
+                        reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            JSONObject info = null;
+            try {
+                info = new JSONObject(s);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            JSONObject day = null;
+            try {
+                day = info.getJSONObject("forecast")
+                        .getJSONArray("forecastday")
+                        .getJSONObject(0)
+                        .getJSONObject("day");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            double avgTemp = 0;
+            try {
+                avgTemp = day.getDouble("avgtemp_c");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            JSONObject condition = null;
+            try {
+                condition = day.getJSONObject("condition");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String weather = null;
+            try {
+                weather = condition.getString("text");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            ClothingService clothes = new ClothingService();
+            clothes.setClothes(avgTemp);
+            clothes.addAccessories(weather);
+            String cloth = clothes.getClothes();
+            int time = clothes.getTime();
+            txtShow.setText(cloth + time);
         }
     }
 }
