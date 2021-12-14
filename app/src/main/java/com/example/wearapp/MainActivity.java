@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     .getJSONArray("legs")
                     .getJSONObject(0)
                     .getJSONObject("departure_time");
+
             travel_mode = info.getJSONArray("routes")
                     .getJSONObject(0)
                     .getJSONArray("legs")
