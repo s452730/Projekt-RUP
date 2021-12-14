@@ -1,6 +1,10 @@
 package com.example.wearapp;
 
 import ClothingService.ClothingService;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.AsyncTask;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -35,6 +39,8 @@ import java.util.List;
 import java.io.FileWriter;
 import java.util.Locale;
 
+import com.example.Notifications.AlarmReceiver;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -50,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private int hourOfWorkingStart;
     private List<String> data;
 
+    //Alarm/notification data
+    Intent alarmIntent;
+    private final int notificationId = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +96,9 @@ public class MainActivity extends AppCompatActivity {
 
 
                     Toast.makeText(MainActivity.this, data.get(0), Toast.LENGTH_LONG).show();
+
+                    //Creating notifications
+                    createNotification("sample title", "sample message", hourOfWorkingStart,0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -126,6 +138,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void createNotification(String title, String message, int hour, int minute){
+        alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+
+        //Intent
+        alarmIntent.putExtra("notificationId", notificationId);
+        alarmIntent.putExtra("title",title);
+        alarmIntent.putExtra("message",message);
+
+        //PendingIntent
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                MainActivity.this, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        //AlarmManager
+        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+        // Create time.
+        Calendar startTime = Calendar.getInstance();
+        startTime.set(Calendar.HOUR_OF_DAY, hour);
+        startTime.set(Calendar.MINUTE, minute);
+        startTime.set(Calendar.SECOND, 0);
+        long alarmStartTime = startTime.getTimeInMillis();
+
+        // Set Alarm
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
     }
 
     class TraceData extends Thread {
