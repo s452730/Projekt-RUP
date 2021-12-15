@@ -56,10 +56,6 @@ public class MainActivity extends AppCompatActivity {
     private int hourOfWorkingStart;
     private List<String> data;
 
-    //Alarm/notification data
-    Intent alarmIntent;
-    private final int notificationId = 1;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,7 +137,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createNotification(String title, String message, int hour, int minute){
-        alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+
+        //Alarm/notification data
+        final int notificationId = 1;
+        Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
 
         //Intent
         alarmIntent.putExtra("notificationId", notificationId);
