@@ -1,6 +1,10 @@
 package com.example.wearapp;
 
 import ClothingService.ClothingService;
+
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.os.AsyncTask;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +31,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import com.example.Notifications.AlarmReceiver;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
 
                 StringBuffer buffer = new StringBuffer();
                 String line = "";
+                createNotification("sample title", "sample message", hourOfWorkingStart,0);
+
 
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
@@ -123,6 +131,36 @@ public class MainActivity extends AppCompatActivity {
             int time = clothes.getTime();
             txtShow.setText(cloth + time);
         }
+    }
+
+    private void createNotification(String title, String message, int hour, int minute){
+
+        //Alarm/notification data
+        final int notificationId = 1;
+        Intent alarmIntent = new Intent(MainActivity.this, AlarmReceiver.class);
+
+        //Intent
+        alarmIntent.putExtra("notificationId", notificationId);
+        alarmIntent.putExtra("title",title);
+        alarmIntent.putExtra("message",message);
+
+        //PendingIntent
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                MainActivity.this, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT
+        );
+
+        //AlarmManager
+        AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+
+        // Create time.
+        Calendar startTime = Calendar.getInstance();
+        startTime.set(Calendar.HOUR_OF_DAY, hour);
+        startTime.set(Calendar.MINUTE, minute);
+        startTime.set(Calendar.SECOND, 0);
+        long alarmStartTime = startTime.getTimeInMillis();
+
+        // Set Alarm
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
     }
 
     class TraceData extends Thread {
