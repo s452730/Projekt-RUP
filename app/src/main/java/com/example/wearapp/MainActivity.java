@@ -40,24 +40,16 @@ public class MainActivity extends AppCompatActivity {
     private EditText adresM;
     private EditText adresP;
     private EditText godzina;
+    private EditText editData;
     private TextView txtShow;
     private Button button;
     private Button button2;
 
-    // for trace api
     private String homeAddress;
     private String workAddress;
-    private String hourOfWorkingStart;
-    private SimpleDateFormat datetimeFormat;
-    private Date timeOfWorkingStart;
-    long epoch;
-    String epochS;
+    private int hourOfWorkingStart;
+    //private int dateOfWorkingStart;
     private List<String> data = new ArrayList<>();
-
-    // for weather api
-    private String cloth;
-    private int time;
-
 
     class WeatherAPI extends AsyncTask<String, String, String> {
 
@@ -76,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
 
                 StringBuffer buffer = new StringBuffer();
                 String line = "";
+                createNotification("sample title", "sample message", hourOfWorkingStart,0);
+
 
                 while ((line = reader.readLine()) != null)
                     buffer.append(line).append("\n");
@@ -135,84 +129,9 @@ public class MainActivity extends AppCompatActivity {
             ClothingService clothes = new ClothingService();
             clothes.setClothes(avgTemp);
             clothes.addAccessories(weather);
-            cloth = clothes.getClothes();
-            time = clothes.getTime();
+            String cloth = clothes.getClothes();
+            int time = clothes.getTime();
             txtShow.setText(cloth + time);
-        }
-    }
-
-    class TraceData extends Thread {
-
-        public void getTraceByJson(String url) throws JSONException {
-            //zwraca czas, kiedy trzeba wyjsc z domu i trase
-            JSONObject info = null;
-            info = new JSONObject(url);
-            String departure_time_value = "";
-            String departure_time_text = "";
-            String line_transport = "";
-            departure_time_value = info.getJSONArray("routes")
-                    .getJSONObject(0)
-                    .getJSONArray("legs")
-                    .getJSONObject(0)
-                    .getJSONObject("departure_time")
-                    .getString("value");
-            departure_time_text = info.getJSONArray("routes")
-                    .getJSONObject(0)
-                    .getJSONArray("legs")
-                    .getJSONObject(0)
-                    .getJSONObject("departure_time")
-                    .getString("text");
-            line_transport = info.getJSONArray("routes")
-                    .getJSONObject(0)
-                    .getJSONArray("legs")
-                    .getJSONObject(0)
-                    .getJSONArray("steps")
-                    .getJSONObject(1)
-                    .getJSONObject("transit_details")
-                    .getJSONObject("line")
-                    .getString("short_name");
-
-            data.add(departure_time_value);
-            data.add(departure_time_text);
-            data.add(line_transport);
-        }
-
-        @Override
-        public void run() {
-            try {
-                URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
-                        "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
-                        + "&destination=" + workAddress
-                        + "&arrival_time=" + epochS);
-                //test
-                //URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Druzbickiego2,Poznan&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&arrival_time=1640116800");
-                //URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
-
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-
-                connection.setRequestMethod("GET");
-                connection.connect();
-
-                InputStream stream = connection.getInputStream();
-                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-                StringBuffer buffer = new StringBuffer();
-                String line = "";
-
-                while ((line = reader.readLine()) != null)
-                    buffer.append(line).append("\n");
-
-                String trace_data = buffer.toString();
-                getTraceByJson(trace_data);
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -246,6 +165,72 @@ public class MainActivity extends AppCompatActivity {
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmStartTime, pendingIntent);
     }
 
+    class TraceData extends Thread {
+
+        public void getTraceByJson(String url) throws JSONException {
+            //zwraca czas, kiedy trzeba wyjsc z domu i trase
+            JSONObject info = null;
+            info = new JSONObject(url);
+            String departure_time = "";
+            String line_transport = "";
+            departure_time = info.getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONArray("legs")
+                    .getJSONObject(0)
+                    .getJSONObject("departure_time")
+                    .getString("value");
+            line_transport = info.getJSONArray("routes")
+                    .getJSONObject(0)
+                    .getJSONArray("legs")
+                    .getJSONObject(0)
+                    .getJSONArray("steps")
+                    .getJSONObject(1)
+                    .getJSONObject("transit_details")
+                    .getJSONObject("line")
+                    .getString("short_name");
+            data.add(departure_time);
+            data.add(line_transport);
+        }
+
+        @Override
+        public void run() {
+            try {
+//              URL url = new URL("https://maps.googleapis.com/maps/api/directions" +
+//                        "/json?key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&origin=" + homeAddress
+//                        + "&destination=" + workAddress
+//                        + "&arrival_time=" + hourOfWorkingStart);
+                //test
+                URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Druzbickiego2,Poznan&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&mode=transit&arrival_time=1639428974");
+                //URL url = new URL("https://maps.googleapis.com/maps/api/directions/json?origin=Os.SobieskiegoPoznan&destination=Drużbickiego2,Poznań&key=AIzaSyCNx1cp5ReJvuzJ5XqCBijNxy2B0mAUl_s&arrival_time=1639428974");
+
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+
+                connection.setRequestMethod("GET");
+                connection.connect();
+
+                InputStream stream = connection.getInputStream();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+
+                StringBuffer buffer = new StringBuffer();
+                String line = "";
+
+                while ((line = reader.readLine()) != null)
+                    buffer.append(line).append("\n");
+
+                String trace_data = buffer.toString();
+                getTraceByJson(trace_data);
+
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -254,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
         adresM = (EditText) findViewById(R.id.adresM);
         adresP = (EditText) findViewById(R.id.adresP);
         godzina = (EditText) findViewById(R.id.godzina);
+        editData = (EditText) findViewById(R.id.data);
         txtShow = (TextView) findViewById(R.id.textTest);
         button = (Button) findViewById(R.id.button);
         button2 = (Button) findViewById(R.id.button2);
@@ -264,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String myTxt = adresM.getText().toString() + "\n" + adresP.getText().toString() + "\n" + godzina.getText().toString() + "\n";
+                String myTxt = adresM.getText().toString() + "\n" + adresP.getText().toString() + "\n" + editData.getText().toString() +"\n"+ godzina.getText().toString() + "\n";
                 try {
 
 //                    FileOutputStream fileOut = openFileOutput("test.json",MODE_PRIVATE);
@@ -277,29 +263,12 @@ public class MainActivity extends AppCompatActivity {
 
                     homeAddress = adresM.getText().toString();
                     workAddress = adresP.getText().toString();
-                    hourOfWorkingStart = godzina.getText().toString();
-                    datetimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                    timeOfWorkingStart = datetimeFormat.parse(hourOfWorkingStart);
-                    epoch = timeOfWorkingStart.getTime() / 1000;
-                    epochS = Long.toString(epoch);
+                    hourOfWorkingStart = Integer.parseInt(godzina.getText().toString());
+                    //dateOfWorkingStart = Integer.parseInt(editData.getText().toString())
                     new TraceData().start();
-;
-                    
 
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.DAY_OF_YEAR, 1);
-                    Date tomorrow = calendar.getTime();
-                    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(tomorrow);
-                    String city = "Poznan";
-                    //String hour = "0";
-                    String key = "992e7cab06164165980213921210812";
-                    String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
-                            "&q=" + city + "&dt=" + date;
-                    new WeatherAPI().execute(url);
 
-                    createNotification("Wake Up","Tramwaj numer: " + data.get(2) + "/Godzina odjazdu:" + data.get(1)
-                            + "/Ubranie:" + cloth + "/Czas na ubieranie się:" + time, 02, 06 );
-                    Toast.makeText(MainActivity.this, data.get(1), Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, data.get(0), Toast.LENGTH_LONG).show();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -320,6 +289,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                     //OPTIONS
                     //TOMORROW_DATE
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
+                    Date tomorrow = calendar.getTime();
+                    String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(tomorrow);
+                    String city = "Poznan";
+                    //String hour = "0";
+                    String key = "992e7cab06164165980213921210812";
+                    String url = "https://api.weatherapi.com/v1/history.json?key=" + key +
+                            "&q=" + city + "&dt=" + date;
+                    new WeatherAPI().execute(url);
                     //txtShow.setText(strbuff.toString());
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
@@ -328,5 +307,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
 }
